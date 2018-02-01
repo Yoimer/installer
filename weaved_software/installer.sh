@@ -113,6 +113,10 @@ platformDetection()
     if [ -f "/etc/os-release" ]; then
         distributionName=$(cat /etc/os-release | grep ID= | grep -v VERSION | awk -F "=" {'print $2'})
     fi
+    if [ -f "/proc/version" ]; then
+        distributionName=$(cat /proc/version | awk {'print $3'} | awk -F "-" {'print $2'})
+        echo Slitaz detected
+    fi
     if [ "$machineType" = "armv6l" ]; then
         PLATFORM=pi
         SYSLOG=/var/log/syslog
@@ -170,6 +174,10 @@ platformDetection()
         if [ ! -f "/var/log/syslog" ]; then
             SYSLOG=/var/log/messages
         fi
+    elif [ "$machineType" = "i686" ] && [ "$osName" = "Linux" ]; then
+            PLATFORM=linux
+            SYSLOG=/var/log/system.log
+            echo This is slitaz
     elif [ "$machineType" = "x86_64" ] && [ "$osName" = "Darwin" ]; then
             PLATFORM=macosx
             SYSLOG=/var/log/system.log
@@ -213,7 +221,7 @@ protocolSelection()
         if [ "$get_num" = 3 ]; then
             PROTOCOL=webiopi
             printf "The default port for WebIOPi is 8000.\n"
-	    if ask "Would you like to continue with the default port assignment?"; then
+        if ask "Would you like to continue with the default port assignment?"; then
                 PORT=8000
             else
                 CUSTOM=2
@@ -242,7 +250,7 @@ protocolSelection()
             WEAVED_PORT=Weaved"$PROTOCOL""$PORT"
         elif [ "$get_num" = 1 ]; then
             PROTOCOL=ssh
-	    printf "The default port for SSH is 22.\n"
+        printf "The default port for SSH is 22.\n"
             if ask "Would you like to continue with the default port assignment?"; then
                 PORT=22
             else
@@ -258,7 +266,7 @@ protocolSelection()
         elif [ "$get_num" = 4 ]; then
             PROTOCOL=vnc
             printf "The default port for VNC is 5901.\n"
-	    if ask "Would you like to continue with the default port assignment?"; then
+        if ask "Would you like to continue with the default port assignment?"; then
                 PORT=5901
             else
                 CUSTOM=2
@@ -560,7 +568,7 @@ userLogin () #Portal login function
 {
     if [ "$USERNAME" != "" ]; then 
         username="$USERNAME"
-    else	
+    else    
         printf "\n\n\n"
         printf "Please enter your Weaved Username (email address): \n"
         read username
@@ -666,9 +674,9 @@ installStartStop()
     fi
     checkCron=$(sudo crontab -l | grep startweaved.sh | wc -l)
     if [ $checkCron = 0 ]; then
-	sudo crontab -l > ./.crontab_old
-	echo "@reboot /usr/bin/startweaved.sh" >> ./.crontab_old
-	sudo crontab ./.crontab_old
+    sudo crontab -l > ./.crontab_old
+    echo "@reboot /usr/bin/startweaved.sh" >> ./.crontab_old
+    sudo crontab ./.crontab_old
     fi
     checkStartWeaved=$(cat "$BIN_DIR"/startweaved.sh | grep "$WEAVED_PORT.sh" | wc -l)
     if [ $checkStartWeaved = 0 ]; then
