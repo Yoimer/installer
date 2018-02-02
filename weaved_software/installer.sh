@@ -39,7 +39,7 @@ checkRequirements()
     else
        echo "$FILE command is not installed."
        echo "Please run this command then try again:"
-       echo "sudo apt-get install curl"
+       echo " apt-get install curl"
        echo ""
        EXIT="1"
     fi
@@ -152,19 +152,19 @@ platformDetection()
                     fi
                 if ask "May we install the missing package(s)?"; then
                     echo "Installing dependencies..."
-                    sudo apt-get update
+                     apt-get update
                     if [ "$checkpackage1" = 0 ]; then
                         echo "Installing $package1..."
-                        sudo dpkg --add-architecture i386
-                        sudo apt-get install -y $package1
+                         dpkg --add-architecture i386
+                         apt-get install -y $package1
                     fi
                     if [ "$checkpackage2" = 0 ]; then
                         echo "Installing $package2..."
-                        sudo apt-get install -y $package2
+                         apt-get install -y $package2
                     fi
                     if [ "$checkpackage3" = 0 ]; then
                         echo "Installing $package3..."
-                        sudo apt-get install -y $package3
+                         apt-get install -y $package3
                     fi
                 fi
             fi
@@ -176,7 +176,7 @@ platformDetection()
         fi
     elif [ "$machineType" = "i686" ] && [ "$osName" = "Linux" ]; then
             PLATFORM=linux
-            SYSLOG=/var/log/system.log
+            SYSLOG=/var/log/custom-weave.log
             echo This is slitaz
     elif [ "$machineType" = "x86_64" ] && [ "$osName" = "Darwin" ]; then
             PLATFORM=macosx
@@ -493,13 +493,13 @@ protocolSelection()
             deleteDevice
             if [ -f $PID_DIR/$WEAVED_PORT.pid ]; then
                 if [ -f $BIN_DIR/$WEAVED_PORT.sh ]; then
-                    sudo $BIN_DIR/$WEAVED_PORT.sh stop
+                     $BIN_DIR/$WEAVED_PORT.sh stop
                 else
                     if ask "The start/stop mechanism has changed in this installer version. May we stop all Weaved services to continue?"; then
-                        sudo killall weavedConnectd
+                         killall weavedConnectd
                     fi
                     if [ -f $PID_DIR/$WEAVED_PORT.pid ]; then
-                        sudo rm $PID_DIR/$WEAVED_PORT.pid
+                         rm $PID_DIR/$WEAVED_PORT.pid
                     fi
                 fi
             fi
@@ -579,7 +579,7 @@ userLogin () #Portal login function
         printf "\nNow, please enter your password: \n"
         read  -s password
     fi
-    resp=$(curl -s -S -X GET -H "content-type:application/json" -H "apikey:WeavedDeveloperToolsWy98ayxR" "$loginURL/$username/$password")
+    resp=$(curl -s -k -S -X GET -H "content-type:application/json" -H "apikey:WeavedDeveloperToolsWy98ayxR" "$loginURL/$username/$password")
     token=$(echo "$resp" | awk -F ":" '{print $3}' | awk -F "," '{print $1}' | sed -e 's/^"//'  -e 's/"$//')
     loginFailed=$(echo "$resp" | grep "login failed" | sed 's/"//g')
     login404=$(echo "$resp" | grep 404 | sed 's/"//g')
@@ -602,7 +602,7 @@ testLogin()
 installEnablement()
 {
     if [ ! -d "WEAVED_DIR" ]; then
-       sudo mkdir -p "$WEAVED_DIR"/services
+        mkdir -p "$WEAVED_DIR"/services
     fi
 
     cat ./enablements/"$PROTOCOL"."$PLATFORM" > ./"$WEAVED_PORT".conf
@@ -612,9 +612,9 @@ installEnablement()
 ######### Install Notifier #########
 installNotifier()
 {
-    sudo chmod +x ./scripts/"$NOTIFIER"
+     chmod +x ./scripts/"$NOTIFIER"
     if [ ! -f "$BIN_DIR"/"$NOTIFIER" ]; then
-        sudo cp ./scripts/"$NOTIFIER" "$BIN_DIR"
+         cp ./scripts/"$NOTIFIER" "$BIN_DIR"
         printf "Copied %s to %s \n" "$NOTIFIER" "$BIN_DIR"
     fi
 }
@@ -625,7 +625,7 @@ installSendNotification()
 {
     sed s/REPLACE/"$WEAVED_PORT"/ < ./scripts/send_notification.sh > ./send_notification.sh
     chmod +x ./send_notification.sh
-    sudo mv ./send_notification.sh $BIN_DIR/notify_$WEAVED_PORT.sh
+     mv ./send_notification.sh $BIN_DIR/notify_$WEAVED_PORT.sh
     printf "Copied notify_%s.sh to %s \n" "$WEAVED_PORT" "$BIN_DIR"
 }
 ######### End Install Send Notification #########
@@ -642,20 +642,20 @@ installWeavedConnectd()
                 echo "We need to shut down all Weaved services to update the Weaved daemon."
                 echo "We will restart them once installation is complete."
                 if ask "May we continue?"; then
-                    sudo killall weavedConnectd
+                     killall weavedConnectd
                 else
                     echo "We are exiting the installer..."
                     exit
                 fi
             fi
-            sudo chmod +x ./bin/"$DAEMON"."$PLATFORM"
-            sudo cp ./bin/"$DAEMON"."$PLATFORM" "$BIN_DIR"/"$DAEMON"
+             chmod +x ./bin/"$DAEMON"."$PLATFORM"
+             cp ./bin/"$DAEMON"."$PLATFORM" "$BIN_DIR"/"$DAEMON"
             printf "Copied %s to %s \n" "$DAEMON" "$BIN_DIR"
         fi
     fi
     if [ ! -f "$BIN_DIR/$DAEMON" ]; then
-            sudo chmod +x ./bin/"$DAEMON"."$PLATFORM"
-            sudo cp ./bin/"$DAEMON"."$PLATFORM" "$BIN_DIR"/"$DAEMON"
+             chmod +x ./bin/"$DAEMON"."$PLATFORM"
+             cp ./bin/"$DAEMON"."$PLATFORM" "$BIN_DIR"/"$DAEMON"
             printf "Copied %s to %s \n" "$DAEMON" "$BIN_DIR"
     fi
        
@@ -666,22 +666,22 @@ installWeavedConnectd()
 installStartStop()
 {
     sed s/WEAVED_PORT=/WEAVED_PORT="$WEAVED_PORT"/ < ./scripts/launchweaved.sh > ./"$WEAVED_PORT".sh
-    sudo mv ./"$WEAVED_PORT".sh $BIN_DIR/$WEAVED_PORT.sh
-    sudo chmod +x $BIN_DIR/$WEAVED_PORT.sh
+     mv ./"$WEAVED_PORT".sh $BIN_DIR/$WEAVED_PORT.sh
+     chmod +x $BIN_DIR/$WEAVED_PORT.sh
     if [ ! -f /usr/bin/startweaved.sh ]; then
-        sudo cp ./scripts/startweaved.sh "$BIN_DIR"
+         cp ./scripts/startweaved.sh "$BIN_DIR"
         printf "startweaved.sh copied to %s\n" "$BIN_DIR"
     fi
-    checkCron=$(sudo crontab -l | grep startweaved.sh | wc -l)
+    checkCron=$( crontab -l | grep startweaved.sh | wc -l)
     if [ $checkCron = 0 ]; then
-    sudo crontab -l > ./.crontab_old
+     crontab -l > ./.crontab_old
     echo "@reboot /usr/bin/startweaved.sh" >> ./.crontab_old
-    sudo crontab ./.crontab_old
+     crontab ./.crontab_old
     fi
     checkStartWeaved=$(cat "$BIN_DIR"/startweaved.sh | grep "$WEAVED_PORT.sh" | wc -l)
     if [ $checkStartWeaved = 0 ]; then
         sed s/REPLACE_TEXT/"$WEAVED_PORT"/ < ./scripts/startweaved_macosx.add > ./startweaved_macosx.add
-        sudo sh -c "cat startweaved_macosx.add >> /usr/bin/startweaved.sh"
+         sh -c "cat startweaved_macosx.add >> /usr/bin/startweaved.sh"
         #rm ./startweaved_macosx.add
     fi
     printf "\n\n"
@@ -691,7 +691,7 @@ installStartStop()
 ######### Fetch UID #########
 fetchUID()
 {
-    sudo "$BIN_DIR"/"$DAEMON" -life -1 -f ./"$WEAVED_PORT".conf > .DeviceTypeSting
+     "$BIN_DIR"/"$DAEMON" -life -1 -f ./"$WEAVED_PORT".conf > .DeviceTypeSting
     DEVICETYPE="$(cat .DeviceTypeSting | grep DeviceType | awk -F "=" '{print $2}')"
     rm .DeviceTypeSting
 }
@@ -702,7 +702,7 @@ checkUID()
 {
     checkforUID="$(tail $WEAVED_PORT.conf | grep UID | wc -l)"
     if [ $checkforUID = 2 ]; then
-        sudo cp ./"$WEAVED_PORT".conf /"$WEAVED_DIR"/services/
+         cp ./"$WEAVED_PORT".conf /"$WEAVED_DIR"/services/
         uid=$(tail $WEAVED_DIR/services/$WEAVED_PORT.conf | grep UID | awk -F "UID" '{print $2}' | xargs echo -n)
         printf "\n\nYour device UID has been successfully provisioned as: %s. \n\n" "$uid"
     else
@@ -719,7 +719,7 @@ retryFetchUID()
         fetchUID
         checkforUID="$(tail $WEAVED_PORT.conf | grep UID | wc -l)"
         if [ "$checkforUID" = 2 ]; then
-            sudo cp ./"$WEAVED_PORT".conf /"$WEAVED_DIR"/services/
+             cp ./"$WEAVED_PORT".conf /"$WEAVED_DIR"/services/
             uid="$(tail $WEAVED_DIR/services/$WEAVED_PORT.conf | grep UID | awk -F "UID" '{print $2}' | xargs echo -n)"
             printf "\n\nYour device UID has been successfully provisioned as: %s. \n\n" "$uid"
             break
@@ -772,7 +772,7 @@ getSecret()
         secret="$(echo $secretCall | awk -F "," '{print $2}' | awk -F "\"" '{print $4}' | sed s/://g)"
         echo "# password - erase this line to unregister the device" >> ./"$WEAVED_PORT".conf
         echo "password $secret" >> ./"$WEAVED_PORT".conf
-        sudo mv ./"$WEAVED_PORT".conf "$WEAVED_DIR"/services/"$WEAVED_PORT".conf
+         mv ./"$WEAVED_PORT".conf "$WEAVED_DIR"/services/"$WEAVED_PORT".conf
     elif [ $test2 = 1 ]; then
         printf "You are missing a valid session token and must be logged back in. \n"
         userLogin
@@ -798,7 +798,7 @@ regMsg()
     printf "%s/services/%s.conf \n\n" "$WEAVED_DIR" "$WEAVED_PORT"
     printf "If you delete this License File, you will have to re-run the installer. \n\n"
     printf "************************************************************************** \n\n\n"
-    printf "Starting and stopping your service can be done by typing:\n\"sudo %s/%s.sh start|stop|restart\" \n" "$BIN_DIR" "$WEAVED_PORT"
+    printf "Starting and stopping your service can be done by typing:\n\" %s/%s.sh start|stop|restart\" \n" "$BIN_DIR" "$WEAVED_PORT"
     
 }
 ######### End Reg Message #########
@@ -826,12 +826,12 @@ startService()
 {
     echo -n "Registering Weaved services for $WEAVED_PORT ";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -n ".";sleep 1;echo -e "\n\n"
     if [ -e "$PID_DIR"/"$WEAVED_PORT.pid" ]; then
-        sudo $BIN_DIR/$WEAVED_PORT.sh stop
+         $BIN_DIR/$WEAVED_PORT.sh stop
         if [ -e "$PID_DIR"/"$WEAVED_PORT.pid" ]; then
-            sudo rm "$PID_DIR"/"$WEAVED_PORT".pid
+             rm "$PID_DIR"/"$WEAVED_PORT".pid
         fi
     fi
-    sudo $BIN_DIR/$WEAVED_PORT.sh start
+     $BIN_DIR/$WEAVED_PORT.sh start
 }
 ######### End Start Service #########
 
@@ -865,7 +865,7 @@ checkforServices()
 ######### Install Yo #########
 installYo()
 {
-    sudo cp ./Yo "$BIN_DIR"
+     cp ./Yo "$BIN_DIR"
 }
 ######### End Install Yo #########
 
@@ -875,11 +875,11 @@ overridePort()
     if [ "$CUSTOM" = 1 ]; then
         cp "$WEAVED_DIR"/services/"$WEAVED_PORT".conf ./
         echo "proxy_dest_port $PORT" >> ./"$WEAVED_PORT".conf
-        sudo mv ./"$WEAVED_PORT".conf "$WEAVED_DIR"/services/
+         mv ./"$WEAVED_PORT".conf "$WEAVED_DIR"/services/
     elif [[ "$CUSTOM" = 2 ]]; then
         cp "$WEAVED_DIR"/services/"$WEAVED_PORT".conf ./
         echo "proxy_dest_port $PORT" >> ./"$WEAVED_PORT".conf
-        sudo mv ./"$WEAVED_PORT".conf "$WEAVED_DIR"/services/
+         mv ./"$WEAVED_PORT".conf "$WEAVED_DIR"/services/
     fi
 }
 ######### End Port Override #########
