@@ -39,7 +39,8 @@ checkRequirements()
     else
        echo "$FILE command is not installed."
        echo "Please run this command then try again:"
-       echo " apt-get install curl"
+       #echo " apt-get install curl"
+       echo tazpkg -gi curl
        echo ""
        EXIT="1"
     fi
