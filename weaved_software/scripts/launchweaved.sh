@@ -38,8 +38,8 @@ stopWeaved()
 	checkPID
 	if [ $isRunning != 0 ]; then
 		echo "Stopping $WEAVED_PORT..."
-		sudo kill $runningPID 2> /dev/null
-		sudo rm $PIDPATH 2> /dev/null
+		kill $runningPID 2> /dev/null
+		rm $PIDPATH 2> /dev/null
 	else
 		echo "$WEAVED_PORT is not currently active. Nothing to stop."
 	fi
@@ -50,7 +50,7 @@ startWeaved()
 	isRunning
 	if [ $isRunning = 0 ]; then
 		echo "Starting $WEAVED_PORT..."
-		sudo $BIN_DIR/$DAEMON -f $WEAVED_DIR/$WEAVED_PORT.conf -d $PID_DIR/$WEAVED_PORT.pid > $LOG_DIR/$WEAVED_PORT.log
+		$BIN_DIR/$DAEMON -f $WEAVED_DIR/$WEAVED_PORT.conf -d $PID_DIR/$WEAVED_PORT.pid > $LOG_DIR/$WEAVED_PORT.log
 		tail $LOG_DIR/$WEAVED_PORT.log
 	else
 		echo "$WEAVED_PORT is already started"

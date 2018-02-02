@@ -61,7 +61,7 @@ userLogin () #Portal login function
     read username
     printf "\nNow, please enter your password: \n"
     read  -s password
-    resp=$(curl -s -S -X GET -H "content-type:application/json" -H "apikey:WeavedDeveloperToolsWy98ayxR" "$loginURL/$username/$password")
+    resp=$(curl -s -k -S -X GET -H "content-type:application/json" -H "apikey:WeavedDeveloperToolsWy98ayxR" "$loginURL/$username/$password")
     token=$(echo "$resp" | awk -F ":" '{print $3}' | awk -F "," '{print $1}' | sed -e 's/^"//'  -e 's/"$//')
     loginFailed=$(echo "$resp" | grep "login failed" | sed 's/"//g')
     login404=$(echo "$resp" | grep 404 | sed 's/"//g')
@@ -93,22 +93,22 @@ listWeavedServices()
             echo $service |xargs basename | awk -F "." {'print $1'}
             if ask "Would you like to delete this service?"; then
                 uid="$(tail $service | grep UID | awk -F "UID" '{print $2}' | xargs echo -n)"
-                curl -s $deleteURL -X 'POST' -d "{\"deviceaddress\":\"$uid\"}" -H “Content-Type:application/json” -H "apikey:WeavedDeveloperToolsWy98ayxR" -H "token:$token"
+                curl -s -k $deleteURL -X 'POST' -d "{\"deviceaddress\":\"$uid\"}" -H “Content-Type:application/json” -H "apikey:WeavedDeveloperToolsWy98ayxR" -H "token:$token"
                 printf "\n"
                 if [ -f $PID_DIR/$(echo $service |xargs basename | awk -F "." {'print $1'}).pid ]; then
                     if [ -f $BIN_DIR/$(echo $service |xargs basename | awk -F "." {'print $1'}).sh ]; then
-                        sudo $BIN_DIR/$(echo $service |xargs basename | awk -F "." {'print $1'}).sh stop
-                        sudo rm $BIN_DIR/$(echo $service |xargs basename | awk -F "." {'print $1'}).sh
+                         $BIN_DIR/$(echo $service |xargs basename | awk -F "." {'print $1'}).sh stop
+                         rm $BIN_DIR/$(echo $service |xargs basename | awk -F "." {'print $1'}).sh
                     fi
                 fi
                 if [ -f $service ]; then
-                    sudo rm $service
+                     rm $service
                 fi
                 if [ -f $BIN_DIR/notify_$(echo $service |xargs basename | awk -F "." {'print $1'}).sh ]; then
-                    sudo rm $BIN_DIR/notify_$(echo $service |xargs basename | awk -F "." {'print $1'}).sh
+                     rm $BIN_DIR/notify_$(echo $service |xargs basename | awk -F "." {'print $1'}).sh
                 fi
                 if [ -f $INIT_DIR/$(echo $service |xargs basename | awk -F "." {'print $1'}) ]; then
-                    sudo rm $INIT_DIR/$(echo $service |xargs basename | awk -F "." {'print $1'})
+                     rm $INIT_DIR/$(echo $service |xargs basename | awk -F "." {'print $1'})
                 fi
 
             fi
@@ -119,16 +119,16 @@ listWeavedServices()
             echo "There no longer appears to be any installed services."
             if ask "Would you like us to uninstall the rest of the Weaved software?"; then
                 if [ -n $(ps ax | grep weavedConnectd | grep -v grep) ]; then
-                    sudo killall weavedConnectd
+                     killall weavedConnectd
                 fi
                 if [ -f $BIN_DIR/$DAEMON ]; then
-                    sudo rm $BIN_DIR/$DAEMON
+                     rm $BIN_DIR/$DAEMON
                 fi
                 if [ -d $WEAVED_DIR ]; then
-                    sudo rm -rf /etc/weaved
+                     rm -rf /etc/weaved
                 fi
                 if [ -f $BIN_DIR/startweaved.sh ]; then
-                    sudo rm $BIN_DIR/startweaved.sh
+                     rm $BIN_DIR/startweaved.sh
                 fi
             fi
         fi
@@ -171,4 +171,3 @@ bashCheck
 userLogin
 testLogin
 listWeavedServices
-
